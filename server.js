@@ -4,12 +4,13 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const port = process.env.PORT || 80; // Porta 80 para alinhar com o Easypanel
+// Configura porta 80 (Padrão Easypanel)
+const port = process.env.PORT || 80;
 
-// URL do seu Webhook n8n
+// URL DO SEU WEBHOOK (Confira se está exata)
 const N8N_WEBHOOK_URL = "https://n8n-editor.vkozv1.easypanel.host/webhook-test/site";
 
-// Configuração do Multer
+// Configuração de onde salvar as fotos
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const dir = './uploads';
@@ -17,46 +18,64 @@ const storage = multer.diskStorage({
     cb(null, dir);
   },
   filename: function (req, file, cb) {
-    const date = new Date().toISOString().replace(/:/g, '-');
+    // Cria um nome único: 2023-10-01-foto.jpg
+    const date = new Date().toISOString().replace(/:/g, '-').split('.')[0];
     cb(null, `${date}-${file.originalname}`);
   }
 });
 
 const upload = multer({ storage: storage });
 
+// Rota principal (Formulário)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// AQUI É A MÁGICA: Recebe do site -> Envia pro n8n
+// Rota de Upload (Recebe a foto -> Salva -> Avisa o n8n)
 app.post('/upload', upload.single('foto'), async (req, res) => {
+  // Pega data/hora do Brasil
   const agora = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
-  console.log(`Foto recebida em: ${agora}`);
+  console.log(`[LOG] Foto recebida em: ${agora}`);
 
-  try {
-    // Se o arquivo foi salvo, vamos tentar enviar para o n8n
-    if (req.file) {
-        // Nota: Node 18+ tem fetch nativo. Se der erro, o n8n pode ler direto da pasta se estiver montada.
-        // Aqui apenas registramos o sucesso pois o arquivo JÁ ESTÁ salvo no servidor.
-        console.log("Arquivo salvo com sucesso:", req.file.path);
-        
-        // Se você quiser ativar o envio real servidor-servidor (complexo sem bibliotecas extras),
-        // o ideal seria usar a lib 'axios' ou 'form-data'. 
-        // Mas como o arquivo já está salvo no volume, o n8n pode ser configurado para ler de lá?
-        // Por enquanto, vamos garantir que o USUÁRIO veja o sucesso.
+  // --- BLOCO QUE ACIONA O N8N ---
+  if (req.file) {
+    try {
+      console.log(`[LOG] Tentando acionar webhook: ${N8N_WEBHOOK_URL}`);
+      
+      // Envia um JSON para o n8n avisando que chegou foto nova
+      const response = await fetch(N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          evento: "nova_foto_ponto",
+          data_hora: agora,
+          nome_arquivo_original: req.file.originalname,
+          nome_arquivo_salvo: req.file.filename,
+          caminho_servidor: req.file.path,
+          tamanho: req.file.size
+        })
+      });
+
+      if (response.ok) {
+        console.log("[SUCESSO] Webhook acionado com sucesso!");
+      } else {
+        console.error(`[ERRO] N8N rejeitou o envio. Status: ${response.status}`);
+      }
+
+    } catch (error) {
+      console.error("[ERRO FATAL] Falha ao conectar no n8n:", error.message);
     }
-  } catch (error) {
-    console.error("Erro interno:", error);
   }
+  // ------------------------------
 
-  // HTML DE SUCESSO
+  // Resposta bonita para o usuário
   res.send(`
     <!DOCTYPE html>
     <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Sucesso</title>
+        <title>Confirmado</title>
         <style>
             body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
             .card { background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 90%; }
@@ -67,8 +86,9 @@ app.post('/upload', upload.single('foto'), async (req, res) => {
     <body>
         <div class="card">
             <div style="font-size: 60px;">✅</div>
-            <h1>Foto Enviada!</h1>
-            <p>Registro realizado em: <br><strong>${agora}</strong></p>
+            <h1>Ponto Registrado!</h1>
+            <p>Seus dados foram enviados.</p>
+            <p style="font-size: 0.8rem; color: #777;">Processado às: ${agora}</p>
             <a href="/" class="btn">Voltar</a>
         </div>
     </body>
@@ -76,7 +96,7 @@ app.post('/upload', upload.single('foto'), async (req, res) => {
   `);
 });
 
+// Inicia o servidor aceitando conexões de fora (0.0.0.0)
 app.listen(port, '0.0.0.0', () => {
   console.log(`Servidor rodando na porta ${port}`);
 });
-
