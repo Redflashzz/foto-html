@@ -7,7 +7,7 @@ const app = express();
 const port = process.env.PORT || 80; // Porta 80 para alinhar com o Easypanel
 
 // URL do seu Webhook n8n
-const N8N_WEBHOOK_URL = "https://n8n-webhook.vkozv1.easypanel.host/webhook/site";
+const N8N_WEBHOOK_URL = "https://n8n-editor.vkozv1.easypanel.host/webhook-test/site";
 
 // Configuração do Multer
 const storage = multer.diskStorage({
@@ -79,3 +79,4 @@ app.post('/upload', upload.single('foto'), async (req, res) => {
 app.listen(port, '0.0.0.0', () => {
   console.log(`Servidor rodando na porta ${port}`);
 });
+
