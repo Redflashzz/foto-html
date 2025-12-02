@@ -5,67 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ponto Eletrônico</title>
     <style>
-        /* Reset e Base */
+        /* (Seu CSS original continua aqui, igualzinho) */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: #333;
-        }
-
-        /* O Cartão Branco */
-        .card {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; color: #333; }
+        .card { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
         h2 { margin-bottom: 0.5rem; color: #1a1a1a; }
         p { margin-bottom: 2rem; color: #666; font-size: 0.9rem; }
-
-        /* Estilizando o Input de Arquivo (Escondido) */
         input[type="file"] { display: none; }
-
-        /* Botão para abrir a câmera (Label) */
-        .upload-btn {
-            display: block;
-            background-color: #e9ecef;
-            color: #495057;
-            padding: 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            border: 2px dashed #ced4da;
-            transition: all 0.3s;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
+        .upload-btn { display: block; background-color: #e9ecef; color: #495057; padding: 15px; border-radius: 10px; cursor: pointer; border: 2px dashed #ced4da; transition: all 0.3s; margin-bottom: 20px; font-weight: 600; }
         .upload-btn:hover { background-color: #dee2e6; border-color: #adb5bd; }
         .upload-btn.file-selected { border-color: #28a745; color: #28a745; background-color: #e8f5e9; }
-
-        /* Botão de Enviar */
-        .submit-btn {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-            color: white;
-            border: none;
-            padding: 15px;
-            width: 100%;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
-            transition: transform 0.2s;
-        }
-
+        .submit-btn { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); transition: transform 0.2s; }
         .submit-btn:active { transform: scale(0.98); }
     </style>
 </head>
@@ -75,7 +25,7 @@
         <h2>Registro de Ponto</h2>
         <p>Por favor, envie uma foto para confirmar sua presença.</p>
         
-        <form action="https://n8n-webhook.vkozv1.easypanel.host/webhook/site" method="post" enctype="multipart/form-data">
+        <form action="/upload" method="post" enctype="multipart/form-data">
             <label for="camera" class="upload-btn" id="uploadLabel">
                 📷 Tirar Foto / Escolher
             </label>
@@ -87,9 +37,7 @@
     </div>
 
     <script>
-        // Script simples para mudar a cor do botão quando a foto for selecionada
         document.getElementById('camera').addEventListener('change', function(e) {
-            const fileName = e.target.files[0] ? e.target.files[0].name : "Nenhuma foto";
             const label = document.getElementById('uploadLabel');
             if(e.target.files[0]) {
                 label.innerHTML = "✅ Foto Selecionada!";
