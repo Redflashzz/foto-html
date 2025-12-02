@@ -8,7 +8,7 @@ const app = express();
 const port = process.env.PORT || 80;
 
 // URL DO SEU WEBHOOK (Confira se está exata)
-const N8N_WEBHOOK_URL = "https://n8n-editor.vkozv1.easypanel.host/webhook-test/site";
+const N8N_WEBHOOK_URL = "https://n8n-webhook.vkozv1.easypanel.host/webhook/site";
 
 // Configuração de onde salvar as fotos
 const storage = multer.diskStorage({
@@ -100,3 +100,4 @@ app.post('/upload', upload.single('foto'), async (req, res) => {
 app.listen(port, '0.0.0.0', () => {
   console.log(`Servidor rodando na porta ${port}`);
 });
+
